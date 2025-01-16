@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빌드 진행 현황</title>
+    <style>
+        @font-face {
+            font-family: 'GyeonggiTitle';
+            src: url('https://cdn.jsdelivr.net/gh/fontbee/fontfiles/GyeonggiTitle/GyeonggiTitle-Bold.woff2') format('woff2'),
+                 url('https://cdn.jsdelivr.net/gh/fontbee/fontfiles/GyeonggiTitle-Bold.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body { 
+            font-family: 'GyeonggiTitle', sans-serif;
+            margin: 40px auto;
+            max-width: 1000px;
+            padding: 20px;
+            line-height: 1.8;
+            background: #f7f9fc;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            color: #222;
+            font-size: 2.8rem;
+        }
+        #infoPanel {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+        }
+        #controlPanel {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div id="infoPanel">
+        <p>관리팀: 라이브서비스팀</p>
+        <p>담당자: 비토</p>
+    </div>
+
+    <h1>빌드 진행 현황</h1>
+    
+    <div id="controlPanel" style="display: block;">
+        <button onclick="addRow()">행 추가</button>
+        <button onclick="saveHTML()">파일 저장</button>
+    </div>
+    
+    <table id="buildTable">
+        <thead>
+            <tr>
+                <th>빌드 번호</th>
+                <th>진행 날짜</th>
+                <th>데이터 마감 시간</th>
+                <th>비고</th>
+                <th>상태</th>
+                <th class="editable-only">행 삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 기본 행 제거 -->
+        </tbody>
+    </table>
+
+    <script>
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '';
+
+        if (isLocal) {
+            document.getElementById("controlPanel").style.display = "block";
+        } else {
+            document.querySelectorAll('.editable-only').forEach(cell => cell.style.display = 'none');
+        }
+
+        function addRow() {
+            if (!isLocal) return alert("읽기 전용 모드에서는 사용할 수 없습니다.");
+            const tableBody = document.querySelector("#buildTable tbody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td><input type="text" value=""></td>
+                <td><input type="date"></td>
+                <td><input type="datetime-local"></td>
+                <td><input type="text"></td>
+                <td>
+                    <select>
+                        <option value="complete">완료</option>
+                        <option value="pending">진행 중</option>
+                    </select>
+                </td>
+                <td class="editable-only"><button onclick="deleteRow(this)">삭제</button></td>
+            `;
+            tableBody.appendChild(newRow);
+        }
+
+        function deleteRow(button) {
+            button.closest('tr').remove();
+        }
+
+        function saveHTML() {
+            if (!isLocal) return alert("읽기 전용 모드에서는 저장할 수 없습니다.");
+            alert('HTML 파일이 저장됩니다.');
+
+            document.querySelectorAll('input, select').forEach(input => {
+                input.setAttribute('value', input.value);
+            });
+
+            const content = document.documentElement.outerHTML;
+            const blob = new Blob([content], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'build_progress_tracker.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>
